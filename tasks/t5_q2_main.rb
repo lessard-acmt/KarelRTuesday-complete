@@ -9,9 +9,11 @@ require_relative "../karel/robota"
 
 # a task for a stair sweeper
 def task()
-  karel = T5Robot.new(1, 5, Robota::NORTH, 15)
+  world = Robota::World
+  world.read_world("../worlds/broccoli.txt")
 
-  karel.mettre_les_quilles
+  karel = T5Robot.new(1, 6, Robota::NORTH, 0)
+  karel.ranger_le_broccoli
 end
 
 if __FILE__ == $0
