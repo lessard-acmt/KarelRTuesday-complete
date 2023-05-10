@@ -4,18 +4,14 @@
 
 $graphical = true
 
-require_relative "stair_sweeper"
+require_relative "t4a_q2_5_beepers_robot"
 require_relative "../karel/robota"
 
 # a task for a stair sweeper
 def task()
-  monde = Robota::World
-  monde.read_world("../worlds/4mai")
-  
-  karel = StairSweeper.new(1, 1, Robota::EAST, 0)
-  karel.sweep_stairs()
-  world.show_world_with_robots(1, 1, 6, 6)
-  karel.display()
+  karel = T4aQ25BeepersRobot.new(3, 3, Robota::NORTH, 25, :magenta)
+
+  karel.mettre_5_rangees_de_5_beepers
   
 end
 
