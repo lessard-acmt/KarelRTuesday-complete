@@ -9,8 +9,8 @@ require_relative "../karel/robota"
 
 # a task for a stair sweeper
 def task()
-  monde = Robota::World
-  monde.read_world("../worlds/4mai")
+  world = Robota::World
+  world.read_world("../worlds/jade")
   
   karel = StairSweeper.new(1, 1, Robota::EAST, 0)
   karel.sweep_stairs()
@@ -21,7 +21,7 @@ end
 
 if __FILE__ == $0
   if $graphical
-     screen = window(15, 40) # (size, speed)
+     screen = window(8, 40) # (size, speed)
      screen.run do
        task
      end

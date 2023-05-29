@@ -10,7 +10,6 @@ require_relative "../karel/robota"
 # a task for a stair sweeper
 def task()
   karel = T5Robot.new(1, 5, Robota::NORTH, 15)
-
   karel.mettre_les_quilles
 end
 
