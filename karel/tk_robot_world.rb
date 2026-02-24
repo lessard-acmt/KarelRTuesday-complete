@@ -4,7 +4,7 @@
 # Replaces robot_world.rb with a graphical world based on tk. 
 
 require_relative 'robota'
-require_relative 'karel_window'
+require_relative 'gosu_karel_window'
 require 'monitor'
 
 # $isVisible = false
@@ -18,9 +18,18 @@ class RobotWorld < RobotWorldBase
   @@delay = 80
   @@instance = nil
   @@graphical_robots = {}
+  @@debug_step_mode = true
+
+  def self.debug_step_mode=(value)
+    @@debug_step_mode = !!value
+  end
+
+  def self.debug_step_mode
+    @@debug_step_mode
+  end
 
   private_class_method :new
- 
+
   def initialize (name)
     super()
     # puts 'new tk robot world'
@@ -38,64 +47,86 @@ class RobotWorld < RobotWorldBase
     @@instance = new("Karel's World") unless @@instance
     @@instance
   end
-  
-  
+
+  def self.flush_window_frame
+    return unless $window
+    return unless $window.respond_to?(:flush_step_frame)
+
+    $window.flush_step_frame
+  end
+
   @@window_size = $window_size
   @@window = nil
-  
+
   def update(robot, action, state)
-    # sleep 0.5
-    return unless state
     if action == MOVE_ACTION
       register_robot(robot, state)
       if $window
         sleep(@@delay / 100.0)
         $window.move_robot(@@graphical_robots[robot])
+        RobotWorld.flush_window_frame
       end
+
     elsif action == CREATE_ACTION
-       # puts 'create'
       register_robot(robot, state)
       if $window
-           street, avenue, direction, color = state[0], state[1], state[2], state[5] #robot._street, robot._avenue robot._direction
-           @@graphical_robots[robot] = $window.add_robot(street, avenue, direction, color)
-
+        street, avenue, direction, color = state[0], state[1], state[2], state[5]
+        @@graphical_robots[robot] = $window.add_robot(street, avenue, direction, color)
+        RobotWorld.flush_window_frame
       end
+
     elsif action == TURN_LEFT_ACTION
-      # puts 'turn'
       if $window
         sleep(@@delay / 100.0)
         $window.turn_left_robot(@@graphical_robots[robot])
-        # @@graphical_robots[robot].rotate()
+        RobotWorld.flush_window_frame
       end
+
     elsif action == TURN_OFF_ACTION
-       sleep(@@delay / 200.0)
-      $window.turn_off_robot(@@graphical_robots[robot])
+      sleep(@@delay / 200.0)
+      if $window
+        $window.turn_off_robot(@@graphical_robots[robot])
+        RobotWorld.flush_window_frame
+      end
+
     elsif action == PICK_BEEPER_ACTION
       if $window
-        @@graphical_robots[robot].pick_put()
+        # Keep compatibility with existing robot image API
+        if @@graphical_robots[robot].respond_to?(:pick_put)
+          @@graphical_robots[robot].pick_put
+        end
+        RobotWorld.flush_window_frame
       end
+
     elsif action == PUT_BEEPER_ACTION
       if $window
-        @@graphical_robots[robot].pick_put()
+        if @@graphical_robots[robot].respond_to?(:pick_put)
+          @@graphical_robots[robot].pick_put
+        end
+        RobotWorld.flush_window_frame
       end
-    else
-      #nothing
     end
-    @robots[robot] = state
-    robot.display() if $tracing
   end
-  
+
   def name
     @name
   end
-  
-  def RobotWorld.set_speed(amount)
-    amount = 100 if amount > 100
-    amount = 0 if amount < 0
-    @@delay = 100 - amount
-    $window.set_speed(amount)
+
+  def self.set_speed(amount)
+    amount = [[amount.to_i, 0].max, 100].min
+
+    # Map 0..100 speed to a delay value used by sleep(@@delay / 100.0)
+    # Higher speed => smaller delay.
+    #
+    # You can tune these numbers:
+    # - max_delay = slowest
+    # - min_delay = fastest
+    max_delay = 120.0
+    min_delay = 0.0
+
+    t = amount / 100.0
+    @@delay = max_delay - (max_delay - min_delay) * t
   end
-  
   # def speed_call_back(*args)
     # # if $window
       # # setDelay(100 - $window.iv.get())

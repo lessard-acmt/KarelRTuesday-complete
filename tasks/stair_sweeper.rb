@@ -8,7 +8,7 @@ require_relative "../mixins/turner"
 class StairSweeper < UrRobot
   include Turner
   def initialize (street, avenue, direction, beepers)
-    super(street, avenue, direction, beepers)
+    super(street, avenue, direction, beepers, :orange)
   end
   
   # climb one stair

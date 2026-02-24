@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="RUBY_MODULE" version="4">
+  <component name="ModuleRunConfigurationManager">
+    <shared />
+  </component>
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/features" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+    </content>
+    <orderEntry type="jdk" jdkName="ruby-4.0.1-p0" jdkType="RUBY_SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="PROVIDED" name="bundler (v4.0.6, ruby-4.0.1-p0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="byebug (v13.0.0, ruby-4.0.1-p0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="gosu (v1.4.6, ruby-4.0.1-p0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="io-console (v0.8.2, ruby-4.0.1-p0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="observer (v0.1.2, ruby-4.0.1-p0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="reline (v0.6.3, ruby-4.0.1-p0) [gem]" level="application" />
+  </component>
+</module>

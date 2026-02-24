@@ -1,0 +1,16 @@
+# Karel world (Gosu WorldMaker)
+world 10 10
+beeper 4 4 1
+beeper 5 4 1
+beeper 5 5 1
+beeper 5 6 1
+beeper 5 7 1
+wall_east 2 3
+wall_east 3 3
+wall_east 4 3
+wall_east 5 3
+wall_north 5 4
+wall_north 5 5
+wall_north 5 6
+wall_north 5 7
+wall_north 5 8

@@ -1,0 +1,27 @@
+GEM
+  specs:
+    byebug (13.0.0)
+      reline (>= 0.6.0)
+    gosu (1.4.6)
+    io-console (0.8.2)
+    observer (0.1.2)
+    reline (0.6.3)
+      io-console (~> 0.5)
+
+PLATFORMS
+  x64-mingw-ucrt
+
+DEPENDENCIES
+  byebug
+  gosu
+  observer
+
+CHECKSUMS
+  byebug (13.0.0)
+  gosu (1.4.6)
+  io-console (0.8.2)
+  observer (0.1.2)
+  reline (0.6.3)
+
+BUNDLED WITH
+  4.0.6
