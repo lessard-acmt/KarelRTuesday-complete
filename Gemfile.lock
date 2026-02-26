@@ -1,4 +1,5 @@
 GEM
+  remote: https://rubygems.org/
   specs:
     byebug (13.0.0)
       reline (>= 0.6.0)
@@ -9,6 +10,7 @@ GEM
       io-console (~> 0.5)
 
 PLATFORMS
+  arm64-darwin-25
   x64-mingw-ucrt
 
 DEPENDENCIES
@@ -24,4 +26,4 @@ CHECKSUMS
   reline (0.6.3)
 
 BUNDLED WITH
-  4.0.6
+  4.0.3

@@ -10,7 +10,7 @@ require_relative "../karel/robota"
 # a task for a stair sweeper
 def task()
   world = Robota::World
-  world.read_world("worlds/marknew.kwld")
+  #world.read_world("worlds/fig1-2a.kwld")
   
   karel = StairSweeper.new(1, 1, Robota::EAST, 0)
 

@@ -44,6 +44,9 @@ class KarelWindow < Gosu::Window
     super(size + 60, size + 60, update_interval: 16.666666) # ~60fps
     self.caption = "Karel's World (Gosu)"
 
+    @main_thread = Thread.current
+    @ui_queue = Queue.new
+
     @_streets = streets
     @_avenues = avenues # unlike old Tk code "sic", keep both
     @height = size
@@ -173,57 +176,73 @@ class KarelWindow < Gosu::Window
   end
 
   def place_beeper(street, avenue, number)
-    @mutex.synchronize do
-      @beepers[[street, avenue]] = number
+    sync_ui do
+      @mutex.synchronize do
+        @beepers[[street, avenue]] = number
+      end
     end
     flush_step_frame
   end
 
   def delete_beeper(beeper_location)
-    @mutex.synchronize do
-      @beepers.delete(beeper_location)
+    sync_ui do
+      @mutex.synchronize do
+        @beepers.delete(beeper_location)
+      end
     end
     flush_step_frame
   end
 
   def place_wall_north_of(street, avenue)
-    @mutex.synchronize do
-      @walls_north[[street, avenue]] = true
+    sync_ui do
+      @mutex.synchronize do
+        @walls_north[[street, avenue]] = true
+      end
     end
     flush_step_frame
   end
 
   def place_wall_east_of(street, avenue)
-    @mutex.synchronize do
-      @walls_east[[street, avenue]] = true
+    sync_ui do
+      @mutex.synchronize do
+        @walls_east[[street, avenue]] = true
+      end
     end
     flush_step_frame
   end
 
   def remove_wall_north_of(street, avenue)
-    @mutex.synchronize do
-      @walls_north.delete([street, avenue])
+    sync_ui do
+      @mutex.synchronize do
+        @walls_north.delete([street, avenue])
+      end
     end
     flush_step_frame
   end
 
   def remove_wall_east_of(street, avenue)
-    @mutex.synchronize do
-      @walls_east.delete([street, avenue])
+    sync_ui do
+      @mutex.synchronize do
+        @walls_east.delete([street, avenue])
+      end
     end
     flush_step_frame
   end
 
   def add_robot(street, avenue, direction, color)
     robot = RobotVisual.new(street, avenue, direction, color, true)
-    @mutex.synchronize { @robots << robot }
+    sync_ui do
+      @mutex.synchronize { @robots << robot }
+    end
     flush_step_frame
     robot
   end
 
   def turn_off_robot(robot)
-    @mutex.synchronize do
-      robot.active = false
+    sync_ui do
+      @mutex.synchronize do
+        robot.active = false
+      end
     end
     flush_step_frame
   end
@@ -231,17 +250,21 @@ class KarelWindow < Gosu::Window
   def move_robot(robot, amount = -1)
     amount = 1 unless amount > 1
     dx, dy = $moveParameters[robot.direction]
-    @mutex.synchronize do
-      robot.street -= dy * amount
-      robot.avenue += dx * amount
+    sync_ui do
+      @mutex.synchronize do
+        robot.street -= dy * amount
+        robot.avenue += dx * amount
+      end
     end
     flush_step_frame
   end
 
   def turn_left_robot(robot)
-    @mutex.synchronize do
-      idx = $directions.index(robot.direction) || 0
-      robot.direction = $directions[(idx + 1) % 4]
+    sync_ui do
+      @mutex.synchronize do
+        idx = $directions.index(robot.direction) || 0
+        robot.direction = $directions[(idx + 1) % 4]
+      end
     end
     flush_step_frame
   end
@@ -258,15 +281,39 @@ class KarelWindow < Gosu::Window
     @speed_amount
   end
 
-  # Debugger-friendly: force one Gosu loop step after each world action.
-  # Gosu documents #tick as a single main-loop step for integration scenarios. :contentReference[oaicite:1]{index=1}
+  # On macOS, Gosu/AppKit event pumping must stay on the main thread.
+  # We keep this as a no-op and instead synchronize world mutations through
+  # a small main-thread command queue so the visible state stays in sync
+  # without calling tick from the worker thread.
   def flush_step_frame
-    return unless @debug_step_flush
-    begin
-      tick
-    rescue StandardError
-      # If tick is called before window is shown on some setups, ignore.
+    # no-op
+  end
+
+  def on_main_thread?
+    Thread.current == @main_thread
+  end
+
+  def sync_ui(&block)
+    if on_main_thread?
+      block.call
+    else
+      done = Queue.new
+      @ui_queue << [block, done]
+      done.pop
     end
+  end
+
+  def drain_ui_queue
+    loop do
+      block, done = @ui_queue.pop(true)
+      begin
+        block.call
+      ensure
+        done << true if done
+      end
+    end
+  rescue ThreadError
+    # queue empty
   end
 
   def enable_debug_step_flush!
@@ -300,6 +347,8 @@ class KarelWindow < Gosu::Window
   # Gosu callbacks
   # -----------------------------
   def update
+    drain_ui_queue
+
     # Simulation logic remains in RobotWorld / task thread
     # Keyboard shortcuts (optional)
     if button_down?(Gosu::KB_ESCAPE)
